@@ -42,10 +42,10 @@ h1 em { font-family: Georgia, serif; font-weight: 400; }
 .workbench h2, .mandate h2, .boundary h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
 .step { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid currentColor; border-radius: 50%; font-size: 11px; }
 .workbench-head p { max-width: 550px; height: 4.5em; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
-.scenarios { position: relative; display: flex; gap: 7px; overflow-x: auto; padding: 24px 0 13px; }
+.scenarios { position: relative; display: flex; gap: 7px; overflow-x: auto; margin-bottom: 20px; padding: 24px 0 13px; }
 .scenarios button { position: relative; z-index: 1; white-space: nowrap; padding: 9px 14px 12px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; }
 .scenarios button[aria-selected="true"] { color: var(--blue); font-weight: 750; }
-.scenario-marker { position: absolute; z-index: 2; bottom: 0; left: 0; width: var(--marker-width, 0px); height: 3px; border-radius: 999px; background: var(--blue); transform: translateX(var(--marker-x, 0px)); transition: transform .28s ease, width .28s ease; }
+.scenario-marker { position: absolute; z-index: 2; bottom: 13px; left: 0; width: var(--marker-width, 0px); height: 3px; border-radius: 999px; background: var(--blue); pointer-events: none; transform: translateX(var(--marker-x, 0px)); transition: transform .28s ease, width .28s ease; }
 .pregrant { display: grid; grid-template-columns: 1fr auto 2fr; gap: 18px; align-items: center; margin-bottom: 14px; padding: 14px 17px; border: 1px solid #c8d5ef; border-left: 4px solid var(--blue); border-radius: 8px; background: #f2f6ff; }
 .pregrant strong { font-size: 13px; }
 .pregrant code { color: var(--blue); font-size: 12px; text-align: right; }
