@@ -161,6 +161,8 @@ npx wrangler deploy --dry-run
 
 Deployment is intentionally separate from Labs routing. Do not add the public Labs route until the source repository is public, the protocol profile is merged, the executable gate is green, and the origin has been independently verified to fail closed.
 
+The checked-in local run record is [`evidence/reference-evidence.md`](evidence/reference-evidence.md).
+
 ## Open reference and Ratify Verify
 
 Use this open-source reference to inspect and adapt the authority boundary yourself. It has no runtime dependency on a hosted Ratify service.
