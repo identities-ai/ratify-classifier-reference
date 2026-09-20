@@ -1,5 +1,3 @@
-import "./style.css";
-
 type ScenarioId = "authorized" | "wrong_customer" | "wrong_operation" | "replay" | "revoked";
 interface Check { label: string; passed: boolean; detail: string }
 interface Lane { allowed: boolean; reason: string; handlerInvocations: number; checks: Check[] }
