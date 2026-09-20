@@ -6,6 +6,11 @@ classifier.dev tells an agent what a request is. Ratify lets the system carrying
 
 **Status:** independent draft. This is not a classifier.dev partnership, endorsement, or official reference architecture.
 
+The concrete boundary: classifier.dev can route an ambiguous support request to
+customer 007, and tenant access can execute because 007 is a valid Acme
+customer. Ratify stops the same call because the signed mandate names customer
+482.
+
 ## The problem
 
 Classification is safe to offer without login because it produces a belief, not a side effect. The trust boundary appears after that result becomes a tool call.
@@ -183,6 +188,6 @@ This repository is deliberately a reference, not a production CRM or identity sy
 
 ## Security
 
-The receiver is the enforcement boundary. It owns the trusted root, reconstructs the requested operation from validated application inputs, binds the proof to that operation, and keeps the handler unreachable except through the allow branch.
+The receiver owns enforcement. It holds the trusted root, reconstructs the requested operation from validated application inputs, binds the Ratify proof to that operation, and keeps the handler unreachable except through the allow branch.
 
 Report vulnerabilities privately to the security contact published by the Ratify Protocol project. Do not include secrets, customer data, or live exploit material in a public issue.
