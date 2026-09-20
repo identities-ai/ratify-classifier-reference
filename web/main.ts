@@ -25,6 +25,7 @@ const ticket = byId("ticket");
 const explanation = byId("scenario-explanation");
 const proposal = byId("proposal");
 const run = byId<HTMLButtonElement>("run");
+const runLabel = byId<HTMLElement>("run-label");
 const error = byId("error");
 let selected: ScenarioId = "wrong_customer";
 const sessionId = crypto.randomUUID();
@@ -38,6 +39,12 @@ function choose(id: ScenarioId): void {
   explanation.textContent = scenarios[id].explanation;
   proposal.textContent = "Waiting for live classifier…";
   error.textContent = "";
+  const marker = document.querySelector<HTMLElement>(".scenario-marker");
+  const selectedButton = document.querySelector<HTMLButtonElement>(`[data-scenario="${id}"]`);
+  if (marker && selectedButton) {
+    marker.style.setProperty("--marker-x", `${selectedButton.offsetLeft}px`);
+    marker.style.setProperty("--marker-width", `${selectedButton.offsetWidth}px`);
+  }
 }
 
 function showLane(name: "access" | "authority", lane: Lane): void {
@@ -73,7 +80,7 @@ document.querySelectorAll<HTMLButtonElement>("[data-scenario]").forEach((button)
 
 run.addEventListener("click", async () => {
   run.disabled = true;
-  run.querySelector("span")!.textContent = "Classifying live…";
+  runLabel.querySelector("b")!.textContent = "Classifying live…";
   error.textContent = "";
   try {
     const response = await fetch(apiPath(), {
@@ -99,7 +106,7 @@ run.addEventListener("click", async () => {
     error.textContent = caught instanceof Error ? caught.message : "The demo could not run.";
   } finally {
     run.disabled = false;
-    run.querySelector("span")!.textContent = "Run both receivers";
+    runLabel.querySelector("b")!.textContent = "Run selected case";
   }
 });
 

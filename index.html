@@ -30,10 +30,11 @@
 
       <section class="workbench" aria-labelledby="workbench-title">
         <div class="workbench-head">
-          <div><span class="step">01</span><h2 id="workbench-title">Choose the failure case</h2></div>
-          <p id="scenario-explanation">The proposed write stays inside the principal-signed customer, scope, and time window, and its operation-bound proof matches the exact call.</p>
+          <div class="scenario-title"><span class="step">01</span><div><h2 id="workbench-title">Choose a case to test</h2><p class="scenario-instruction">Select one option, then run it through both receivers.</p></div></div>
+          <p class="scenario-explanation" id="scenario-explanation">The proposed write stays inside the principal-signed customer, scope, and time window, and its operation-bound proof matches the exact call.</p>
         </div>
         <div class="scenarios" role="tablist" aria-label="Demo scenarios">
+          <span class="scenario-marker" aria-hidden="true"></span>
           <button role="tab" aria-selected="false" data-scenario="authorized">Exact mandate</button>
           <button role="tab" aria-selected="true" data-scenario="wrong_customer">1 · Start: wrong account</button>
           <button role="tab" aria-selected="false" data-scenario="wrong_operation">Different operation</button>
@@ -61,7 +62,7 @@
           </div>
         </div>
 
-        <button class="run" id="run"><span>Run both receivers</span><span aria-hidden="true">↗</span></button>
+        <button class="run" id="run" aria-label="Run the selected case through both receivers"><span class="run-label" id="run-label"><b>Run selected case</b><small>Click to classify and compare both receivers</small></span><span aria-hidden="true">↗</span></button>
 
         <div class="lane-grid" aria-live="polite">
           <article class="lane access-lane">
@@ -99,8 +100,16 @@
 
       <section class="boundary">
         <div class="boundary-copy"><span class="step">03</span><h2>Classification proposes.<br />The receiver verifies.</h2><p>Ratify does not prove that the classifier is correct. It gives the receiving system a cryptographic basis to allow or stop the action the classifier caused.</p></div>
-        <div class="boundary-map" role="img" aria-label="Ticket flows through classifier.dev to an agent proposal, then Ratify verifies the principal mandate before the protected handler">
-          <div><small>Untrusted intent</small><strong>Ticket</strong></div><i>→</i><div><small>Semantic routing</small><strong>classifier.dev</strong></div><i>→</i><div><small>Proposed action</small><strong>Agent call</strong></div><i class="gate">◆</i><div class="protected"><small>Authority gate</small><strong>Ratify</strong></div><i>→</i><div><small>Side effect</small><strong>Handler</strong></div>
+        <div class="boundary-flow" role="img" aria-label="A support ticket is classified by classifier.dev, turned into a proposed agent call, verified by Ratify at the receiver, and allowed to reach the CRM handler only when authorized">
+          <div class="boundary-node"><small>01 · INPUT</small><strong>Support ticket</strong><span>What the customer asks for</span></div>
+          <i>→</i>
+          <div class="boundary-node classifier-node"><small>02 · CLASSIFY</small><strong>classifier.dev</strong><span>Labels what it means</span></div>
+          <i>→</i>
+          <div class="boundary-node"><small>03 · PROPOSE</small><strong>Agent call</strong><span>Typed operation and resource</span></div>
+          <i class="gate">◆</i>
+          <div class="boundary-node protected"><small>04 · VERIFY</small><strong>Ratify receiver</strong><span>Checks authority before action</span></div>
+          <i>→</i>
+          <div class="boundary-node"><small>05 · EFFECT</small><strong>CRM handler</strong><span>Runs only on allow</span></div>
         </div>
       </section>
 
