@@ -27,6 +27,7 @@ const proposal = byId("proposal");
 const run = byId<HTMLButtonElement>("run");
 const runLabel = byId<HTMLElement>("run-label");
 const error = byId("error");
+const scenarioExplanation = byId("scenario-explanation");
 let selected: ScenarioId = "wrong_customer";
 const sessionId = crypto.randomUUID();
 
@@ -36,6 +37,7 @@ function choose(id: ScenarioId): void {
     button.setAttribute("aria-selected", String(button.dataset.scenario === id));
   });
   ticket.textContent = scenarios[id].ticket;
+  scenarioExplanation.classList.add("is-changing");
   explanation.textContent = scenarios[id].explanation;
   proposal.textContent = "Waiting for live classifier…";
   error.textContent = "";
@@ -45,6 +47,7 @@ function choose(id: ScenarioId): void {
     marker.style.setProperty("--marker-x", `${selectedButton.offsetLeft}px`);
     marker.style.setProperty("--marker-width", `${selectedButton.offsetWidth}px`);
   }
+  requestAnimationFrame(() => requestAnimationFrame(() => scenarioExplanation.classList.remove("is-changing")));
 }
 
 function showLane(name: "access" | "authority", lane: Lane): void {
