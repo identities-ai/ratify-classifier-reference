@@ -4,7 +4,44 @@ An executable reference for the boundary between semantic routing and delegated 
 
 classifier.dev tells an agent what a request is. Ratify lets the system carrying the consequence verify what that agent was authorized to do next.
 
-**Status:** independent draft. This is not a classifier.dev partnership, endorsement, or official reference architecture.
+**Status:** open-source independent reference implementation. This is not a
+classifier.dev partnership, endorsement, or official reference architecture.
+
+## Start here
+
+This lab is an interactive comparison, not a hosted product signup. It shows
+what changes when a classifier's proposed action reaches two different
+receivers:
+
+1. Run the lab locally with the commands below.
+2. Choose **Wrong account** and click **Run selected case**.
+3. Read the two results: ordinary tenant access executes the update for valid
+   customer 007, while the Ratify receiver stops it because the signed mandate
+   is for customer 482.
+4. Choose **Exact mandate** and run it again. Both receivers allow the call.
+5. Try the remaining cases to see operation mismatch, replay, and revocation.
+
+The lesson is simple: classification proposes an action; the receiver that
+owns the side effect decides whether that exact action is authorized.
+
+## What this reference uses
+
+This repository uses [`@identities-ai/ratify-protocol`](https://github.com/identities-ai/ratify-protocol)
+directly. The protocol SDK issues the demo delegation, signs the presentation,
+binds the proof to the proposed operation, and verifies it offline in the
+receiver. The package version is pinned in `package.json` so the executable
+example has a known protocol surface.
+
+It does **not** use
+[`@identities-ai/ratify-receiver`](https://github.com/identities-ai/ratify-receiver).
+That is a separate TypeScript helper for a server that chooses the managed
+Ratify Verify service and wants a guarded handler API. This lab is intentionally
+an open, self-contained protocol reference: `src/demo-session.ts` implements
+the demonstrator receiver with a SQLite-backed challenge store, exact operation
+binding, expiry, revocation, trusted-principal checks, and single-use replay
+protection. A production TypeScript service can choose the receiver helper when
+it wants that managed Verify integration; the two projects are complementary,
+not interchangeable.
 
 The concrete boundary: classifier.dev can route an ambiguous support request to
 customer 007, and tenant access can execute because 007 is a valid Acme
@@ -28,15 +65,22 @@ Ratify does not prove that classifier.dev is correct. It gives the receiver a cr
 
 ```mermaid
 flowchart LR
-    P[Principal issues exact mandate] --> A[Agent]
-    T[Support ticket] --> C[classifier.dev]
-    C --> R[Deterministic route and entity resolution]
-    R --> X[Proposed CRM call]
-    A --> X
-    X --> V{Receiver verifies authority}
-    V -->|exact match| H[Protected handler runs]
-    V -->|wrong customer, scope, revocation, or replay| S[Handler stays untouched]
+    T[Support ticket] --> C[classifier.dev\nsemantic classification]
+    C --> O[Deterministic operation\ncustomer 007 update]
+    P[Principal\nsigns mandate for customer 482] --> A[Agent presents proof]
+    O --> B[Proposed CRM call]
+    A --> B
+    B --> U[Tenant access\nchecks tenant and credential]
+    B --> V[Ratify receiver\nchecks exact authority]
+    U -->|valid tenant call| H1[Handler executes]
+    V -->|exact mandate| H2[Handler executes]
+    V -->|wrong account, operation,\nrevocation, or replay| D[Handler untouched]
 ```
+
+The two lanes receive the same proposed call. The first answers “can this
+credential reach the tenant?” The second answers “did this principal authorize
+this agent to perform this exact operation on this exact resource, now, and
+only once?”
 
 ## Run it locally
 
@@ -51,6 +95,16 @@ npm run dev
 Open the local URL Vite prints. classifier.dev does not require an API key. `CLASSIFIER_API_KEY` is optional and only supports a partner or operator quota if one is provided.
 
 The local demo uses public, fixed test identities. They are intentionally not secrets and must never be used outside this reference.
+
+## What each part does
+
+| Part | Responsibility | What it does not decide |
+| --- | --- | --- |
+| classifier.dev | Classifies the support ticket and returns an action label with confidence | Whether the action is authorized |
+| Application mapping | Converts the label into a typed, deterministic operation and resource path | Whether the classifier chose correctly |
+| Tenant access lane | Demonstrates ordinary authenticated tenant access | Exact principal mandate, replay, or revocation |
+| Ratify protocol lane | Verifies the signed delegation, challenge, scope, path, operation, expiry, revocation, and freshness | Whether the business request itself is desirable |
+| Protected handler | Performs the simulated CRM update only after the receiver allows | Any authorization that happens after the side effect |
 
 ## Run the executable gate
 
