@@ -1,0 +1,32 @@
+{
+  "name": "ratify-classifier-reference",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run check && wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "npm run types:check && npm run typecheck && npm test && npm run build",
+    "types": "wrangler types",
+    "types:check": "wrangler types --check"
+  },
+  "dependencies": {
+    "@identities-ai/ratify-protocol": "1.0.0-alpha.20"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.56.0",
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.0",
+    "vitest": "4.1.0",
+    "wrangler": "4.135.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

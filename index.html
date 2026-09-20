@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="See the difference between API access and exact delegated authority after classifier.dev routes an agent action." />
+    <title>Confidence routes. Authority decides.</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <a class="brand" href="https://ratifyprotocol.com" aria-label="Ratify Protocol home">
+          <span class="mark" aria-hidden="true">R</span>
+          <span>Ratify <b>Lab</b></span>
+        </a>
+        <div class="partner"><span>Semantic routing by</span><a href="https://classifier.dev" target="_blank" rel="noreferrer">classifier.dev ↗</a></div>
+      </header>
+
+      <section class="hero">
+        <div class="eyebrow"><span></span> Interactive reference</div>
+        <h1>Confidence routes.<br /><em>Authority decides.</em></h1>
+        <div><p class="thesis">An agent’s credential says who it is. Ratify says what this specific call was allowed to do.</p><p class="lede">Ratify does not prove a classifier is correct. It lets the receiver verify authority for the action classification caused.</p></div>
+      </section>
+
+      <section class="workbench" aria-labelledby="workbench-title">
+        <div class="workbench-head">
+          <div><span class="step">01</span><h2 id="workbench-title">Choose the failure case</h2></div>
+          <p id="scenario-explanation">The proposed write stays inside the principal-signed customer, scope, and time window, and its operation-bound proof matches the exact call.</p>
+        </div>
+        <div class="scenarios" role="tablist" aria-label="Demo scenarios">
+          <button role="tab" aria-selected="false" data-scenario="authorized">Exact mandate</button>
+          <button role="tab" aria-selected="true" data-scenario="wrong_customer">1 · Start: wrong account</button>
+          <button role="tab" aria-selected="false" data-scenario="wrong_operation">Different operation</button>
+          <button role="tab" aria-selected="false" data-scenario="replay">Copied request</button>
+          <button role="tab" aria-selected="false" data-scenario="revoked">Authority revoked</button>
+        </div>
+
+        <div class="pregrant"><span class="micro">Issued before classification</span><strong>Principal → agent</strong><code>data:write · Acme / customer 482 / billing-address · 10 min · receiver single-use</code></div>
+
+        <div class="route-strip">
+          <div class="ticket">
+            <span class="micro">Support ticket</span>
+            <p id="ticket">Update the billing address for customer 482 to 16 Market Street.</p>
+          </div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="classification">
+            <span class="micro">classifier.dev</span>
+            <strong id="class-label">Awaiting classification</strong>
+            <span id="confidence">Live result appears here</span>
+          </div>
+          <div class="arrow" aria-hidden="true">→</div>
+          <div class="proposal">
+            <span class="micro">Proposed call</span>
+            <code id="proposal">Waiting for live classifier…</code>
+          </div>
+        </div>
+
+        <button class="run" id="run"><span>Run both receivers</span><span aria-hidden="true">↗</span></button>
+
+        <div class="lane-grid" aria-live="polite">
+          <article class="lane access-lane">
+            <div class="lane-title"><span class="lane-number">A</span><div><span class="micro">Common control</span><h3>Tenant access</h3></div></div>
+            <p>Authenticated, tenant-scoped, object-checked.</p>
+            <div class="verdict waiting" id="access-verdict"><span>READY</span><strong>Not run</strong></div>
+            <ul class="checks" id="access-checks"><li><i></i>Awaiting receiver checks</li></ul>
+            <div class="counter">Handler executions <strong id="access-count">0</strong></div>
+          </article>
+
+          <article class="lane authority-lane">
+            <div class="lane-title"><span class="lane-number">B</span><div><span class="micro">Ratify receiver</span><h3>Exact authority</h3></div></div>
+            <p>Everything in A, plus principal-signed intent.</p>
+            <div class="verdict waiting" id="authority-verdict"><span>READY</span><strong>Not run</strong></div>
+            <ul class="checks" id="authority-checks"><li><i></i>Awaiting proof verification</li></ul>
+            <div class="counter">Handler executions <strong id="authority-count">0</strong></div>
+          </article>
+        </div>
+        <p class="error" id="error" role="alert"></p>
+      </section>
+
+      <section class="explainer" aria-label="What each project contributes">
+        <div class="explainer-card classifier-card"><span class="step">A</span><div><span class="micro">classifier.dev</span><h2>Semantic routing</h2><p>Zero-shot classification over plain HTTP: text in, a label and calibrated confidence out. It helps an agent decide what a request means.</p><a href="https://classifier.dev" target="_blank" rel="noreferrer">See classifier.dev ↗</a></div></div>
+        <div class="flow-plus" aria-hidden="true">+</div>
+        <div class="explainer-card ratify-card"><span class="step">B</span><div><span class="micro">Ratify Protocol</span><h2>Delegated authority</h2><p>A portable proof that a recognized principal authorized this agent for this bounded action, checked by the receiver before the side effect.</p><a href="https://ratifyprotocol.com" target="_blank" rel="noreferrer">Explore Ratify Protocol ↗</a></div></div>
+      </section>
+
+      <section class="mandate" aria-labelledby="mandate-title">
+        <div><span class="step">02</span><h2 id="mandate-title">The fact an API key cannot carry</h2></div>
+        <p class="mandate-sentence">This principal authorized <mark>one agent</mark> to perform <mark>writes</mark> on <mark>customer 482</mark> for a short window. The receiver binds and accepts <mark>this call once</mark>.</p>
+        <div class="scope-line">
+          <span>Principal</span><b>signed</b><span>Agent</span><b>data:write</b><span>Acme / 482 / billing-address</span><b>10 min</b><span>single use</span>
+        </div>
+      </section>
+
+      <section class="boundary">
+        <div class="boundary-copy"><span class="step">03</span><h2>Classification proposes.<br />The receiver verifies.</h2><p>Ratify does not prove that the classifier is correct. It gives the receiving system a cryptographic basis to allow or stop the action the classifier caused.</p></div>
+        <div class="boundary-map" role="img" aria-label="Ticket flows through classifier.dev to an agent proposal, then Ratify verifies the principal mandate before the protected handler">
+          <div><small>Untrusted intent</small><strong>Ticket</strong></div><i>→</i><div><small>Semantic routing</small><strong>classifier.dev</strong></div><i>→</i><div><small>Proposed action</small><strong>Agent call</strong></div><i class="gate">◆</i><div class="protected"><small>Authority gate</small><strong>Ratify</strong></div><i>→</i><div><small>Side effect</small><strong>Handler</strong></div>
+        </div>
+      </section>
+
+      <footer><p>Open-source reference. Fixed demo identities are public and must never be used in production.</p><a href="https://github.com/identities-ai/ratify-protocol">Protocol ↗</a></footer>
+    </main>
+    <script type="module" src="/web/main.ts"></script>
+  </body>
+</html>

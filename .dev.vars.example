@@ -1,0 +1,4 @@
+# Optional: classifier.dev works without login. Set only for a partner/operator quota.
+CLASSIFIER_API_KEY=
+LABS_ROUTER_TOKEN=replace-with-local-router-token
+PRIVACY_SALT=replace-with-random-local-salt

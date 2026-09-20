@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ratify-classifier-reference",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-08-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "DEMO_SESSIONS", "class_name": "DemoSession" },
+      { "name": "RATE_GATES", "class_name": "RateGate" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["DemoSession", "RateGate"] }
+  ],
+  "vars": {
+    "CLASSIFIER_ORIGIN": "https://classifier.dev",
+    "ALLOW_LOCAL_DEV": "false"
+  },
+  "secrets": {
+    "required": [
+      "LABS_ROUTER_TOKEN",
+      "PRIVACY_SALT"
+    ]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  }
+}
