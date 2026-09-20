@@ -104,9 +104,9 @@ h1 em { font-family: Georgia, serif; font-weight: 400; }
 .boundary { display: grid; grid-template-columns: .72fr 1.68fr; gap: 46px; padding: 82px 0; }
 .boundary-copy p { color: var(--muted); line-height: 1.55; }
 .boundary-flow { display: grid; grid-template-columns: 1.25fr auto 1.25fr auto 1.25fr auto 1.45fr auto 1.2fr; align-items: center; gap: 8px; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--white); }
-.boundary-node { min-width: 0; min-height: 128px; display: flex; flex-direction: column; justify-content: space-between; padding: 15px 13px; border: 1px solid #ccd7e9; border-radius: 11px; background: #fafbfe; }
+.boundary-node { min-width: 0; height: 148px; display: grid; grid-template-rows: auto 1fr auto; gap: 12px; padding: 15px 13px; border: 1px solid #ccd7e9; border-radius: 11px; background: #fafbfe; }
 .boundary-node small { color: var(--muted); font: 650 9px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
-.boundary-node strong { margin-top: 24px; font-size: 14px; }
+.boundary-node strong { align-self: center; margin: 0; font-size: 14px; }
 .boundary-node span { color: var(--muted); font-size: 11px; line-height: 1.35; }
 .classifier-node { border-color: #a9c4ff; background: #f4f8ff; }
 .classifier-node small { color: var(--blue); }
