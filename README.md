@@ -1,11 +1,35 @@
 # classifier.dev × Ratify Protocol
 
-An executable reference for the boundary between semantic routing and delegated authority.
+An executable open-source reference for the boundary between semantic routing
+and delegated authority.
 
-classifier.dev tells an agent what a request is. Ratify lets the system carrying the consequence verify what that agent was authorized to do next.
+[classifier.dev website](https://classifier.dev) · [Ratify Protocol website](https://ratifyprotocol.com) · [Ratify Protocol source code](https://github.com/identities-ai/ratify-protocol) · [Run it in Ratify Labs](https://labs.ratifyprotocol.com/classifier-dev/)
+
+classifier.dev tells an agent what a request means. Ratify lets the system
+carrying the consequence verify what that agent was authorized to do next.
 
 **Status:** open-source independent reference implementation. This is not a
 classifier.dev partnership, endorsement, or official reference architecture.
+
+## About this project
+
+[classifier.dev](https://classifier.dev) is a semantic classification service:
+it receives text and returns structured dimensions such as the requested
+operation and its confidence. That helps an agent route a request, but it does
+not establish permission to carry out the resulting tool call.
+
+[Ratify Protocol](https://ratifyprotocol.com) is an open protocol for portable,
+receiver-verifiable delegated authority. A principal signs a bounded mandate
+for an agent, and the receiver verifies the proof against the exact operation,
+resource, context, validity window, revocation state, and one-time challenge
+before allowing the side effect.
+
+This repository puts the two ideas next to each other in a runnable Cloudflare
+Worker reference. It deliberately shows both a competent tenant-access lane
+and a Ratify authority lane so developers can see why authentication and
+semantic confidence are not substitutes for exact delegated authority. The
+reference is independent and does not claim to be produced, endorsed, or
+maintained by classifier.dev.
 
 ## Start here
 
