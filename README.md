@@ -173,7 +173,7 @@ sequenceDiagram
     alt exact authority verified
         R->>H: Execute once
     else any check fails
-        R-->>A: Stop; handler untouched
+        R-->>A: Stop, handler untouched
     end
 ```
 
