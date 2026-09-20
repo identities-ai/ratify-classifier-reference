@@ -126,7 +126,9 @@ export class DemoSession extends DurableObject<Env> {
       now,
       session_context: receiverBinding.sessionContext,
       challenge_store: this.challenges,
-      is_revoked: (certId) => input.scenario === "revoked" && certId === authority.delegation.cert_id,
+      revocation: {
+        isRevoked: async (certId) => [input.scenario === "revoked" && certId === authority.delegation.cert_id, null],
+      },
       context: {
         has_resource: true,
         requested_resource_id: TENANT_RESOURCE,
@@ -134,28 +136,34 @@ export class DemoSession extends DurableObject<Env> {
       },
     });
 
-    let result = await verify();
-    if (input.scenario === "replay" && result.valid) result = await verify();
-    const trustedRoot = result.human_id === authority.root.id;
-    const allowed = result.valid && trustedRoot;
+    const firstResult = await verify();
+    const replayResult = input.scenario === "replay" && firstResult.valid ? await verify() : null;
+    const result = replayResult ?? firstResult;
+    const trustedRoot = firstResult.human_id === authority.root.id;
+    const allowed = firstResult.valid && trustedRoot;
     const authorityCount = allowed ? this.increment("authority") : this.count("authority");
     const statusReason: Partial<Record<string, string>> = {
       scope_denied: "mandate does not grant the proposed scope",
       constraint_denied: "path is outside the signed resource bound",
       unauthorized: "receiver challenge was already used",
+      unknown_challenge: "receiver challenge was already used",
       revoked: "principal authority has been revoked",
       invalid: "proof did not verify",
     };
     const proofCert = proof.delegations[0];
     const operationInScope = result.identity_status !== "scope_denied";
     const pathInScope = result.identity_status !== "constraint_denied";
-    const challengeFresh = result.identity_status !== "unauthorized";
+    const challengeFresh = replayResult !== null
+      ? false
+      : result.identity_status !== "unauthorized" && result.error_reason !== UNKNOWN_CHALLENGE;
     const notRevoked = result.identity_status !== "revoked";
     const trustedPresentedRoot = proofCert?.issuer_id === authority.root.id;
     const authorityDecision: LaneDecision = {
       lane: "authority",
       allowed,
-      reason: allowed ? "exact principal mandate verified" : (!trustedRoot && result.valid ? "principal is not a trusted root" : (statusReason[result.identity_status] ?? result.error_reason ?? result.identity_status)),
+      reason: input.scenario === "replay" && allowed
+        ? "first call executed; copied request stopped"
+        : allowed ? "exact principal mandate verified" : (!trustedRoot && result.valid ? "principal is not a trusted root" : (statusReason[result.identity_status] ?? result.error_reason ?? result.identity_status)),
       handlerRan: allowed,
       handlerInvocations: authorityCount,
       checks: [

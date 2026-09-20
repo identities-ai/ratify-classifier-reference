@@ -34,7 +34,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioDefinition> = {
 };
 
 export function isScenarioId(value: unknown): value is ScenarioId {
-  return typeof value === "string" && value in SCENARIOS;
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(SCENARIOS, value);
 }
 
 export function scenarioById(id: ScenarioId): ScenarioDefinition {

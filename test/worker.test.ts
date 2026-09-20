@@ -53,9 +53,18 @@ describe("classifier to authority boundary", () => {
     expect(result.authority.reason).toContain("signed resource bound");
   });
 
-  it.each(["wrong_operation", "replay", "revoked"] as const)("stops %s only at the authority receiver", async (scenario) => {
+  it.each(["wrong_operation", "revoked"] as const)("stops %s only at the authority receiver", async (scenario) => {
     const result = await run(scenario);
     expect(result.access.allowed).toBe(true);
     expect(result.authority.allowed).toBe(false);
+  });
+
+  it("executes the original request once and stops a copied replay", async () => {
+    const result = await run("replay");
+    expect(result.access.handlerInvocations).toBe(2);
+    expect(result.authority.allowed).toBe(true);
+    expect(result.authority.handlerInvocations).toBe(1);
+    expect(result.authority.reason).toContain("copied request stopped");
+    expect(result.authority.checks.find((check) => check.label === "Fresh and single-use")?.passed).toBe(false);
   });
 });

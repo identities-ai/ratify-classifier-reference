@@ -7,6 +7,7 @@
     <title>Confidence routes. Authority decides.</title>
     <link rel="canonical" href="https://labs.ratifyprotocol.com/classifier-dev/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ratify Labs" />
     <meta property="og:title" content="classifier.dev × Ratify — Confidence routes. Authority decides." />
     <meta property="og:description" content="Run classifier.dev's proposed action through ordinary tenant access and a Ratify receiver that verifies the exact signed authority before the CRM handler runs." />
     <meta property="og:url" content="https://labs.ratifyprotocol.com/classifier-dev/" />
@@ -18,6 +19,7 @@
     <meta name="twitter:title" content="classifier.dev × Ratify — Confidence routes. Authority decides." />
     <meta name="twitter:description" content="Run classifier.dev's proposed action through ordinary tenant access and a Ratify receiver that verifies the exact signed authority before the CRM handler runs." />
     <meta name="twitter:image" content="https://labs.ratifyprotocol.com/og/classifier-dev.jpg" />
+    <meta name="twitter:image:alt" content="classifier.dev and Ratify compare semantic classification with exact delegated authority." />
     <link rel="icon" href="./ratify-logo.png" type="image/png" />
     <link rel="stylesheet" href="./web/style.css" />
   </head>
@@ -44,7 +46,7 @@
       <section class="workbench" aria-labelledby="workbench-title">
         <div class="workbench-head">
           <div class="scenario-title"><span class="step">01</span><div><h2 id="workbench-title">Choose a case to test</h2><p class="scenario-instruction">Select one option, then run it through both receivers.</p></div></div>
-          <p class="scenario-explanation" id="scenario-explanation">The proposed write stays inside the principal-signed customer, scope, and time window, and its operation-bound proof matches the exact call.</p>
+          <p class="scenario-explanation" id="scenario-explanation">Classification is correct, but the downstream resolver picks the wrong Anderson account. Tenant access cannot see that the mandate names customer 482.</p>
         </div>
         <div class="scenarios" role="tablist" aria-label="Demo scenarios">
           <span class="scenario-marker" aria-hidden="true"></span>
@@ -60,7 +62,7 @@
         <div class="route-strip">
           <div class="ticket">
             <span class="micro">Support ticket</span>
-            <p id="ticket">Update the billing address for customer 482 to 16 Market Street.</p>
+          <p id="ticket">Update the billing address on the Anderson account to 16 Market Street.</p>
           </div>
           <div class="arrow" aria-hidden="true">→</div>
           <div class="classification">

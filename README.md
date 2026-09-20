@@ -43,7 +43,7 @@ receivers:
    customer 007, while the Ratify receiver stops it because the signed mandate
    is for customer 482.
 4. Choose **Exact mandate** and run it again. Both receivers allow the call.
-5. Try the remaining cases to see operation mismatch, replay, and revocation.
+5. Try the remaining cases to see operation mismatch, one successful request followed by a stopped replay, and revocation.
 
 The lesson is simple: classification proposes an action; the receiver that
 owns the side effect decides whether that exact action is authorized.
@@ -99,7 +99,7 @@ flowchart LR
     B --> V["Ratify receiver<br/>checks exact authority"]
     U -->|valid tenant call| H1["Handler executes"]
     V -->|exact mandate| H2["Handler executes"]
-    V -->|wrong account, operation, revocation, or replay| D["Handler untouched"]
+    V -->|wrong account, operation, revocation, or copied replay| D["Handler untouched for that attempt"]
 ```
 
 The two lanes receive the same proposed call. The first answers “can this
@@ -127,7 +127,7 @@ The local demo uses public, fixed test identities. They are intentionally not se
 | --- | --- | --- |
 | classifier.dev | Classifies the support ticket and returns an action label with confidence | Whether the action is authorized |
 | Application mapping | Converts the label into a typed, deterministic operation and resource path | Whether the classifier chose correctly |
-| Tenant access lane | Demonstrates ordinary authenticated tenant access | Exact principal mandate, replay, or revocation |
+| Tenant access lane | Demonstrates ordinary authenticated tenant access | Exact principal mandate or revocation |
 | Ratify protocol lane | Verifies the signed delegation, challenge, scope, path, operation, expiry, revocation, and freshness | Whether the business request itself is desirable |
 | Protected handler | Performs the simulated CRM update only after the receiver allows | Any authorization that happens after the side effect |
 

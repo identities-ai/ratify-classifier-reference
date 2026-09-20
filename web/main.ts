@@ -91,11 +91,20 @@ run.addEventListener("click", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ scenario: selected, sessionId }),
     });
-    const body: unknown = await response.json();
+    const raw = await response.text();
+    let body: unknown = null;
+    try {
+      body = raw ? JSON.parse(raw) : null;
+    } catch {
+      body = null;
+    }
     if (!response.ok) {
-      const code = typeof body === "object" && body !== null && "error" in body ? String((body as { error: unknown }).error) : "request_failed";
+      const code = typeof body === "object" && body !== null && "error" in body
+        ? String((body as { error: unknown }).error)
+        : raw || "request_failed";
       throw new Error(code.replaceAll("_", " "));
     }
+    if (body === null || typeof body !== "object") throw new Error("request_failed");
     const result = body as DemoResult;
     byId("class-label").textContent = result.classification.action.label;
     byId("confidence").textContent = result.classification.action.confidence === null
