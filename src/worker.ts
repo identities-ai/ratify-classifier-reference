@@ -120,6 +120,19 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (!await routed(request, env)) return new Response("Not found", { status: 404, headers: headers("text/plain; charset=utf-8") });
     const url = new URL(request.url);
+    if ((request.method === "GET" || request.method === "HEAD") && url.pathname === BASE_PATH) {
+      return new Response(null, {
+        status: 308,
+        headers: new Headers({
+          Location: `${BASE_PATH}/${url.search}`,
+          "Cache-Control": "no-store",
+          "Content-Security-Policy": "default-src 'self'; frame-ancestors 'self'",
+          "Referrer-Policy": "no-referrer",
+          "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "SAMEORIGIN",
+        }),
+      });
+    }
     const path = url.pathname.startsWith(BASE_PATH) ? url.pathname.slice(BASE_PATH.length) || "/" : url.pathname;
     if (path === "/api/run") return runDemo(request, env);
     if (request.method !== "GET" && request.method !== "HEAD") return json({ error: "method_not_allowed" }, 405);
