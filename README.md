@@ -64,17 +64,18 @@ This reference makes that difference visible. The same classifier-driven call go
 Ratify does not prove that classifier.dev is correct. It gives the receiver a cryptographic basis to allow or stop the action classification caused.
 
 ```mermaid
+%%{init: {"flowchart": {"diagramPadding": 56}}}%%
 flowchart LR
-    T[Support ticket] --> C[classifier.dev\nsemantic classification]
-    C --> O[Deterministic operation\ncustomer 007 update]
-    P[Principal\nsigns mandate for customer 482] --> A[Agent presents proof]
-    O --> B[Proposed CRM call]
+    T["Support ticket"] --> C["classifier.dev<br/>semantic classification"]
+    C --> O["Deterministic operation<br/>customer 007 update"]
+    P["Principal<br/>signs mandate for customer 482"] --> A["Agent presents proof"]
+    O --> B["Proposed CRM call"]
     A --> B
-    B --> U[Tenant access\nchecks tenant and credential]
-    B --> V[Ratify receiver\nchecks exact authority]
-    U -->|valid tenant call| H1[Handler executes]
-    V -->|exact mandate| H2[Handler executes]
-    V -->|wrong account, operation,\nrevocation, or replay| D[Handler untouched]
+    B --> U["Tenant access<br/>checks tenant and credential"]
+    B --> V["Ratify receiver<br/>checks exact authority"]
+    U -->|valid tenant call| H1["Handler executes"]
+    V -->|exact mandate| H2["Handler executes"]
+    V -->|wrong account, operation, revocation, or replay| D["Handler untouched"]
 ```
 
 The two lanes receive the same proposed call. The first answers “can this
