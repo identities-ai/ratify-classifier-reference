@@ -28,8 +28,19 @@ const run = byId<HTMLButtonElement>("run");
 const runLabel = byId<HTMLElement>("run-label");
 const error = byId("error");
 const scenarioExplanation = byId("scenario-explanation");
+const scenarioStrip = document.querySelector<HTMLElement>(".scenarios");
 let selected: ScenarioId = "wrong_customer";
 const sessionId = crypto.randomUUID();
+
+function updateScenarioMarker(): void {
+  const marker = document.querySelector<HTMLElement>(".scenario-marker");
+  const selectedButton = document.querySelector<HTMLButtonElement>(`[data-scenario="${selected}"]`);
+  if (!marker || !selectedButton || !scenarioStrip) return;
+  const stripRect = scenarioStrip.getBoundingClientRect();
+  const buttonRect = selectedButton.getBoundingClientRect();
+  marker.style.setProperty("--marker-x", `${buttonRect.left - stripRect.left + scenarioStrip.scrollLeft}px`);
+  marker.style.setProperty("--marker-width", `${buttonRect.width}px`);
+}
 
 function choose(id: ScenarioId): void {
   selected = id;
@@ -41,12 +52,9 @@ function choose(id: ScenarioId): void {
   explanation.textContent = scenarios[id].explanation;
   proposal.textContent = "Waiting for live classifier…";
   error.textContent = "";
-  const marker = document.querySelector<HTMLElement>(".scenario-marker");
   const selectedButton = document.querySelector<HTMLButtonElement>(`[data-scenario="${id}"]`);
-  if (marker && selectedButton) {
-    marker.style.setProperty("--marker-x", `${selectedButton.offsetLeft}px`);
-    marker.style.setProperty("--marker-width", `${selectedButton.offsetWidth}px`);
-  }
+  selectedButton?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  updateScenarioMarker();
   requestAnimationFrame(() => requestAnimationFrame(() => scenarioExplanation.classList.remove("is-changing")));
 }
 
@@ -80,6 +88,8 @@ function apiPath(): string {
 document.querySelectorAll<HTMLButtonElement>("[data-scenario]").forEach((button) => {
   button.addEventListener("click", () => choose(button.dataset.scenario as ScenarioId));
 });
+scenarioStrip?.addEventListener("scroll", updateScenarioMarker, { passive: true });
+window.addEventListener("resize", updateScenarioMarker);
 
 run.addEventListener("click", async () => {
   run.disabled = true;
