@@ -1,15 +1,16 @@
 import {
-  buildSessionContext,
-  operationContextHash,
-  type OperationContext,
-} from "@identities-ai/ratify-protocol";
+  buildSessionContextV2,
+  operationContextV2Hash,
+  type OperationContextV2,
+} from "@identities-ai/ratify-protocol/v2";
 import type { ActionLabel, ProposedAction } from "./types";
 
 export const TENANT_RESOURCE = "crm:tenant/acme";
 export const AUTHORIZED_CUSTOMER = "482";
 export const AUTHORIZED_PATH = `/customers/${AUTHORIZED_CUSTOMER}/billing-address`;
-export const VERIFIER_ID = "ratify-classifier-reference-receiver";
-export const WORKSPACE_ID = "acme-support";
+// Protocol v2 session contexts take a canonical lowercase UUID workspace ID.
+// The verifier ID is the receiver's 64-hex key ID (see authority.ts).
+export const WORKSPACE_ID = "4f9d3c2a-8b1e-4c5d-9a7f-2e6b0c1d3a58";
 export const SESSION_ID = "classifier-write-demo";
 
 const actionMap: Record<Exclude<ActionLabel, "none of these">, Pick<ProposedAction, "operation" | "requiredScope">> = {
@@ -47,11 +48,11 @@ async function sha256Json(value: unknown): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
 }
 
-export async function bindingFor(action: ProposedAction, agentId: string): Promise<{
-  operation: OperationContext;
+export async function bindingFor(action: ProposedAction, verifierId: string, agentId: string): Promise<{
+  operation: OperationContextV2;
   sessionContext: Uint8Array;
 }> {
-  const operation: OperationContext = {
+  const operation: OperationContextV2 = {
     required_scope: action.requiredScope,
     operation: action.operation,
     resource_id: TENANT_RESOURCE,
@@ -60,13 +61,13 @@ export async function bindingFor(action: ProposedAction, agentId: string): Promi
   };
   return {
     operation,
-    sessionContext: buildSessionContext({
-      verifier_id: VERIFIER_ID,
+    sessionContext: buildSessionContextV2({
+      verifier_id: verifierId,
       workspace_id: WORKSPACE_ID,
       agent_id: agentId,
       session_id: SESSION_ID,
       invocation_id: action.invocationId,
-      request_hash: operationContextHash(operation),
+      request_hash: operationContextV2Hash(operation),
     }),
   };
 }
