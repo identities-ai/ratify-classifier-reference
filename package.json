@@ -16,7 +16,7 @@
     "types:check": "wrangler types --check"
   },
   "dependencies": {
-    "@identities-ai/ratify-protocol": "file:vendor/identities-ai-ratify-protocol-2.0.0-alpha.1-5f1093e.tgz"
+    "@identities-ai/ratify-protocol": "2.0.0-beta.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.56.0",

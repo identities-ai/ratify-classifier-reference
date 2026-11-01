@@ -1,6 +1,3 @@
-// RATIFY_V2_PIN: this file imports the Protocol v2 TypeScript SDK from the
-// vendored local build in vendor/. Switch package.json to the published
-// 2.0.0-beta.1 package at release.
 import {
   CONSTRAINT_RESOURCE_PATH_V2,
   hybridKeypairFromSeeds,

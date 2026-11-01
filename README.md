@@ -11,10 +11,11 @@ carrying the consequence verify what that agent was authorized to do next.
 **Status:** open-source independent reference implementation. This is not a
 classifier.dev partnership, endorsement, or official reference architecture.
 
-**Protocol line:** Ratify Protocol v2 (`2.0.0` prerelease). The v2 gate
-passed on 2026-10-22 ([evidence](evidence/reference-evidence.md)). Protocol v2
-is a prerelease: review so far is internal adversarial review, and external
-independent review is a gate for `2.0.0`. The earlier Protocol v1 run
+**Protocol line:** Ratify Protocol v2, on the published
+`@identities-ai/ratify-protocol@2.0.0-beta.1` package. The v2 gate passed on
+2026-11-01 ([evidence](evidence/reference-evidence.md)). Protocol v2 is a
+prerelease: review so far is the project's own pre-release security review,
+and external independent review is a gate for `2.0.0`. The earlier Protocol v1 run
 (`1.0.0-alpha.20`, 2026-09-19) is kept in the evidence file as dated history.
 
 ## About this project
@@ -63,10 +64,13 @@ demo delegation, signs the presentation, binds the proof to the proposed
 operation, signs revocation status, and verifies and releases the decision in
 the receiver without a call to any hosted service.
 
-Until `2.0.0-beta.1` is published, `package.json` points at a local build of
-the SDK vendored in `vendor/` (built from the protocol source at commit
-`5f1093e`). Each place that switches to the published package at release is
-marked `RATIFY_V2_PIN`.
+`package.json` pins the published `2.0.0-beta.1` exactly. That release is on
+the npm `next` dist-tag; an unpinned install resolves to the v1 line until
+`2.0.0`. To use the same SDK in another project:
+
+```bash
+npm install @identities-ai/ratify-protocol@2.0.0-beta.1
+```
 
 It does **not** use
 [`@identities-ai/ratify-receiver`](https://github.com/identities-ai/ratify-receiver).
@@ -235,7 +239,6 @@ For teams that want a managed trust, revocation, replay, audit, and availability
 | `src/operation.ts` | Deterministic label-to-operation mapping and operation binding |
 | `src/authority.ts` | Demo principal, agent, status and receiver keys; exact delegation issuance; presentation |
 | `src/demo-session.ts` | Durable challenge issuance store, signed status, pinned-root verification, release, and protected counters |
-| `vendor/` | Local build of the Protocol v2 SDK until `2.0.0-beta.1` is published |
 | `src/access.ts` | Competent tenant-access comparison lane |
 | `src/worker.ts` | Closed Labs origin, input bounds, privacy-preserving rate limit, and API |
 | `web/` | Interactive side-by-side visualization |

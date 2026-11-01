@@ -1,6 +1,4 @@
 import { DurableObject } from "cloudflare:workers";
-// RATIFY_V2_PIN: Protocol v2 SDK from the vendored local build in vendor/.
-// Switch package.json to the published 2.0.0-beta.1 package at release.
 import {
   ErrV2ChallengeIssuanceConflict,
   ErrV2ChallengeIssuanceNotFound,
@@ -240,6 +238,7 @@ export class DemoSession extends DurableObject<Env> {
       requiredScope: proposal.requiredScope,
       verifierNamespace: NAMESPACE,
       replayEpoch: REPLAY_EPOCH,
+      verifierID: keys.verifier.id,
       now: store.now(),
       maxChallengeAgeSeconds: 300,
       futureSkewSeconds: 5,
