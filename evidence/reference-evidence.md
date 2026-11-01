@@ -2,7 +2,7 @@
 
 ## Protocol v2 run on the published beta (2026-11-01)
 
-Executed locally on 2026-11-01 with Node.js 22.23.4 (npm 10.9.9, the Node.js version CI uses), Wrangler `4.135.0`, Vite `8.3.0`, Vitest `4.1.0`, and the Cloudflare Workers runtime supplied by `@cloudflare/vitest-pool-workers`.
+Executed locally on 2026-11-01 with Node.js 22.23.4 (npm 10.9.9, the Node.js version CI uses), Wrangler `4.156.0`, Vite `8.3.5`, Vitest `4.1.12`, and the Cloudflare Workers runtime supplied by `@cloudflare/vitest-pool-workers`.
 
 Ratify SDK: the Protocol v2 API (`@identities-ai/ratify-protocol/v2`) from the published npm package `@identities-ai/ratify-protocol@2.0.0-beta.1`, pinned exactly in `package.json` and locked in `package-lock.json` with integrity `sha512-z46s51qBgiZF3XYKBv8fc4o3pzWk2220xvEjELp66fcI72LwkO9wSPX/LBMDKLSxsrE7H2YvbhGuN46UQrYT2Q==`. The vendored pre-release build is removed.
 
