@@ -19,14 +19,21 @@
     "@identities-ai/ratify-protocol": "1.0.0-alpha.20"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.56.0",
+    "@cloudflare/vite-plugin": "1.66.0",
     "@cloudflare/vitest-pool-workers": "0.22.0",
     "typescript": "5.9.3",
-    "vite": "8.3.0",
-    "vitest": "4.1.0",
-    "wrangler": "4.135.0"
+    "vite": "8.3.5",
+    "vitest": "4.1.12",
+    "wrangler": "4.156.0"
   },
   "engines": {
     "node": ">=22.13.0"
+  },
+  "overrides": {
+    "@cloudflare/vitest-pool-workers": {
+      "wrangler": "$wrangler",
+      "miniflare": "5.20261023.3-beta",
+      "zod": "4.6.7"
+    }
   }
 }
