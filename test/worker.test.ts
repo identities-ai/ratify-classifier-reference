@@ -43,6 +43,12 @@ describe("classifier to authority boundary", () => {
     const result = await run("authorized");
     expect(result.access.allowed).toBe(true);
     expect(result.authority.allowed).toBe(true);
+    // Protocol v2: every check passes, including release of the signed
+    // receipt, and identities are 64-hex key IDs.
+    expect(result.authority.checks.every((check) => check.passed)).toBe(true);
+    expect(result.authority.checks.find((check) => check.label === "Released")?.passed).toBe(true);
+    expect(result.mandate.principal).toMatch(/^[0-9a-f]{64}$/);
+    expect(result.mandate.agent).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("shows tenant access cannot distinguish the wrong customer", async () => {
@@ -51,12 +57,20 @@ describe("classifier to authority boundary", () => {
     expect(result.access.allowed).toBe(true);
     expect(result.authority.allowed).toBe(false);
     expect(result.authority.reason).toContain("signed resource bound");
+    expect(result.authority.checks.filter((check) => !check.passed).map((check) => check.label)).toEqual(["Mandated customer path"]);
   });
 
-  it.each(["wrong_operation", "revoked"] as const)("stops %s only at the authority receiver", async (scenario) => {
+  it.each([
+    ["wrong_operation", "Mandated operation", "mandate does not grant the proposed scope"],
+    ["revoked", "Not revoked", "principal authority has been revoked"],
+  ] as const)("stops %s only at the authority receiver", async (scenario, failedCheck, reason) => {
     const result = await run(scenario);
     expect(result.access.allowed).toBe(true);
     expect(result.authority.allowed).toBe(false);
+    // The deny is a released v2 decision for the stated reason, not a
+    // verification error: only the named check fails.
+    expect(result.authority.reason).toBe(reason);
+    expect(result.authority.checks.filter((check) => !check.passed).map((check) => check.label)).toEqual([failedCheck]);
   });
 
   it("executes the original request once and stops a copied replay", async () => {

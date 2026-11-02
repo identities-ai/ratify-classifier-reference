@@ -11,6 +11,13 @@ carrying the consequence verify what that agent was authorized to do next.
 **Status:** open-source independent reference implementation. This is not a
 classifier.dev partnership, endorsement, or official reference architecture.
 
+**Protocol line:** Ratify Protocol v2, on the published
+`@identities-ai/ratify-protocol@2.0.0-beta.1` package. The v2 gate passed on
+2026-11-01 ([evidence](evidence/reference-evidence.md)). Protocol v2 is a
+prerelease: review so far is the project's own pre-release security review,
+and external independent review is a gate for `2.0.0`. The earlier Protocol v1 run
+(`1.0.0-alpha.20`, 2026-09-19) is kept in the evidence file as dated history.
+
 ## About this project
 
 [classifier.dev](https://classifier.dev) is a semantic classification service:
@@ -50,20 +57,30 @@ owns the side effect decides whether that exact action is authorized.
 
 ## What this reference uses
 
-This repository uses [`@identities-ai/ratify-protocol`](https://github.com/identities-ai/ratify-protocol)
-directly. The protocol SDK issues the demo delegation, signs the presentation,
-binds the proof to the proposed operation, and verifies it offline in the
-receiver. The package version is pinned in `package.json` so the executable
-example has a known protocol surface.
+This repository uses the Protocol v2 API of
+[`@identities-ai/ratify-protocol`](https://github.com/identities-ai/ratify-protocol)
+(`@identities-ai/ratify-protocol/v2`) directly. The protocol SDK issues the
+demo delegation, signs the presentation, binds the proof to the proposed
+operation, signs revocation status, and verifies and releases the decision in
+the receiver without a call to any hosted service.
+
+`package.json` pins the published `2.0.0-beta.1` exactly. That release is on
+the npm `next` dist-tag; an unpinned install resolves to the v1 line until
+`2.0.0`. To use the same SDK in another project:
+
+```bash
+npm install @identities-ai/ratify-protocol@2.0.0-beta.1
+```
 
 It does **not** use
 [`@identities-ai/ratify-receiver`](https://github.com/identities-ai/ratify-receiver).
 That is a separate TypeScript helper for a server that chooses the managed
 Ratify Verify service and wants a guarded handler API. This lab is intentionally
 an open, self-contained protocol reference: `src/demo-session.ts` implements
-the demonstrator receiver with a SQLite-backed challenge store, exact operation
-binding, expiry, revocation, trusted-principal checks, and single-use replay
-protection. A production TypeScript service can choose the receiver helper when
+the demonstrator receiver with a SQLite-backed challenge issuance store, exact
+operation binding, expiry, signed revocation status, a trusted-principal key
+pin, single-use replay protection, and release of the signed receipt before
+the handler runs. A production TypeScript service can choose the receiver helper when
 it wants that managed Verify integration; the two projects are complementary,
 not interchangeable.
 
@@ -137,24 +154,25 @@ npm ci
 npm run check
 ```
 
-The gate regenerates and checks Cloudflare bindings, type-checks the Worker and browser client, runs five Durable Object integration cases in the Workers runtime, and builds the production bundle. No test is skipped.
+The gate regenerates and checks Cloudflare bindings, type-checks the Worker and browser client, runs five Durable Object integration cases in the Workers runtime, and builds the production bundle. No test is skipped. Each deny case asserts the released v2 reason and that only the expected check failed.
 
 The cases encode the business boundary:
 
 - exact mandate: both receivers execute;
 - wrong account: tenant access executes, exact authority stops;
 - different operation: classifier.dev proposes a read, while the mandate grants one write;
-- copied request: bearer access executes twice, the receiver challenge is consumed once;
-- revoked authority: tenant access remains valid, the Ratify receiver stops.
+- copied request: bearer access executes twice, the receiver challenge is claimed once and the copy is a replay that is never evaluated;
+- revoked authority: tenant access remains valid, the principal's status publisher signs a revocation under its separate status key, and the Ratify receiver stops with `delegation_revoked`.
 
 ## How the integration works
 
 1. Before classification, the principal issues a short-lived `data:write` delegation to the support agent for `crm:tenant/acme/customers/482/billing-address`.
 2. The Worker sends the ticket to classifier.dev's multidimensional `POST /v1/classify` API. The returned action label is not cosmetic: it selects the canonical operation and required Ratify scope.
 3. Deterministic application code resolves the customer and constructs the proposed call. The model is not used for parsing, routing tables, retries, or authorization.
-4. The receiving Durable Object issues an operation-bound, single-use challenge.
+4. The receiving Durable Object issues a challenge with the v2 issuance helper. The challenge is bound to the expected agent key and to the session context the receiver built from the operation, and the record is durable before the challenge is returned.
 5. The agent presents the signed delegation and challenge response.
-6. The receiver reconstructs the operation, pins the accepted principal, verifies the proof, atomically consumes the challenge, and reaches the protected handler only on allow.
+6. The receiver reconstructs the operation, pins the complete principal root key, checks signed revocation status from the principal's status key, verifies the proof and claims the challenge once. Verification ends in a committed outcome that is not yet actionable.
+7. The receiver publishes the signed verification receipt, waits for the checkpoint acknowledgement, releases the decision, and reaches the protected handler only when the released decision is `allowed()` at the receiver's clock.
 
 ```mermaid
 sequenceDiagram
@@ -169,8 +187,9 @@ sequenceDiagram
     A->>R: Proposed call
     R-->>A: Operation-bound challenge
     A->>R: Delegation proof plus signed challenge
-    R->>R: Verify trusted root, scope, path, payload, expiry, revocation, freshness
-    alt exact authority verified
+    R->>R: Verify trusted root, scope, path, payload, expiry, signed status, freshness
+    R->>R: Publish receipt, checkpoint acknowledgement, release
+    alt released and allowed
         R->>H: Execute once
     else any check fails
         R-->>A: Stop, handler untouched
@@ -183,31 +202,32 @@ Keep classifier.dev (or any other classifier) on the belief side of the boundary
 
 1. Issue a Ratify delegation from the accountable principal to the agent. Put the narrow resource path, scope, expiry, and any application limits in the certificate.
 2. Let the agent call the classifier and map its label to a typed operation with deterministic application code.
-3. Have the receiver issue a fresh challenge and reconstruct the operation and payload digest itself. Do not let the model or caller choose the trust root or final scope.
-4. Call `verifyBundle` with the receiver's trusted root, required scope, resource context, revocation provider, and durable `ChallengeStore`. Invoke the protected handler only when it returns valid.
+3. Have the receiver issue a fresh challenge with `issueChallengeV2` and reconstruct the operation and payload digest itself. Do not let the model or caller choose the trust root or final scope.
+4. Call `verifyProofBundleV2` with the receiver's pinned root key, required scope, resource context, the principal's status key, and durable Part B stores. Publish the receipt, call `releaseV2Decision`, and invoke the protected handler only when the released decision is allowed.
 
 The smallest receiver decision looks like this:
 
 ```ts
-const decision = await verifyBundle(proofBundle, {
-  required_scope: proposed.requiredScope,
-  session_context: receiverSessionContext,
-  context: {
-    has_resource: true,
-    requested_resource_id: proposed.resourceId,
-    requested_path: proposed.path,
-  },
-  challenge_store: durableChallengeStore,
-  revocation: receiverRevocationProvider,
-});
+const outcome = await verifyProofBundleV2({
+  bundle: proofWire,
+  expected: await loadExpectedChallengeV2(issuanceStore, namespace, epoch, challenge),
+  contextPolicy: newV2ContextPolicy(profile, true, sessionFields, receiverSessionContext),
+  requiredScope: proposed.requiredScope,
+  context: { hasResource: true, requestedResourceID: proposed.resourceId, requestedPath: proposed.path },
+  statusKeys: new Map([[rootKeyID, { epoch: 1, key: statusPublicKey }]]),
+  // namespace, replay epoch, clock, skew, tzdb version and status policy omitted
+}, { claimStore, trust: pinnedRootKey, statusEvidence, statusJournal });
 
-if (!decision.valid || decision.human_id !== trustedPrincipalId) {
+if (outcome.stage !== "committed") return denyWithoutCallingTheHandler();
+const receipt = await receiptLog.publishV2Receipt(outcome.committed.claimID(), outcome.committed.receiptBody());
+const result = await releaseV2Decision(outcome.committed, receipt, { verifierPublicKey, logID, claimStore, checkpoint });
+if (result.status !== "released" || !(await result.decision.allowed(clock))) {
   return denyWithoutCallingTheHandler();
 }
 return protectedHandler(proposed);
 ```
 
-This reference is the code developers can fork: the Cloudflare Worker boundary in `src/worker.ts`, the SQLite-backed receiver state in `src/demo-session.ts`, operation binding in `src/operation.ts`, and the browser comparison in `web/`. The Ratify SDK remains the portable protocol dependency. A production integration replaces the public demo identities, simulated issuer, deterministic fixture directory, and local revocation callback with its own principal identity, policy, data store, and audit system.
+This reference is the code developers can fork: the Cloudflare Worker boundary in `src/worker.ts`, the SQLite-backed receiver state in `src/demo-session.ts`, operation binding in `src/operation.ts`, and the browser comparison in `web/`. The Ratify SDK remains the portable protocol dependency. A production integration replaces the public demo identities, simulated issuer, deterministic fixture directory, in-run status publisher, and test-only Part B stores with its own principal identity, status publication, durable claim store, receipt log, independent checkpoint, policy, data store, and audit system.
 
 For teams that want a managed trust, revocation, replay, audit, and availability layer instead of operating those pieces, the next step is the [Ratify Verify design-partner path](https://ratifyprotocol.com/?intent=proof#partners).
 
@@ -217,8 +237,8 @@ For teams that want a managed trust, revocation, replay, audit, and availability
 | --- | --- |
 | `src/classifier.ts` | Bounded classifier.dev request and strict response validation |
 | `src/operation.ts` | Deterministic label-to-operation mapping and operation binding |
-| `src/authority.ts` | Demo principal, agent, and exact delegation issuance |
-| `src/demo-session.ts` | Durable challenge store, trusted-root verification, and protected counters |
+| `src/authority.ts` | Demo principal, agent, status and receiver keys; exact delegation issuance; presentation |
+| `src/demo-session.ts` | Durable challenge issuance store, signed status, pinned-root verification, release, and protected counters |
 | `src/access.ts` | Competent tenant-access comparison lane |
 | `src/worker.ts` | Closed Labs origin, input bounds, privacy-preserving rate limit, and API |
 | `web/` | Interactive side-by-side visualization |
@@ -250,7 +270,7 @@ The checked-in local run record is [`evidence/reference-evidence.md`](evidence/r
 
 Use this open-source reference to inspect and adapt the authority boundary yourself. It has no runtime dependency on a hosted Ratify service.
 
-Ratify Verify is the managed path for organizations that do not want to operate trust-root distribution, revocation freshness, durable challenge storage, audit retention, observability, availability, and supported receiver adapters. Both paths use the same portable proof semantics.
+Ratify Verify is the managed path for organizations that do not want to operate trust-root distribution, revocation freshness, durable challenge storage, audit retention, observability, availability, and supported receiver adapters. Ratify Verify does not yet support Protocol v2, so this v2 reference has no managed Verify equivalent today.
 
 ## Production limitations
 
@@ -259,8 +279,9 @@ This repository is deliberately a reference, not a production CRM or identity sy
 - The principal and agent identities are fixed public fixtures.
 - The principal mandate is issued by a simulated trusted workflow. A production issuer must authenticate the principal and record the real approval or governing policy.
 - The customer directory and Anderson resolver are deterministic fixtures used to expose a realistic downstream resolution error.
-- Revocation is local to the demonstration. Production receivers need an authenticated, freshness-bounded revocation source and a defined outage policy.
-- Durable Objects provide atomic challenge consumption and counters, but this reference does not implement multi-region disaster recovery or audit export.
+- Revocation status is signed by a status publisher under a status key separate from the root key, and the receiver checks it against that key. In this reference the publisher, its state and the status feed live inside each run. Production receivers need a published, freshness-bounded status feed, durable publisher state, and a defined outage policy.
+- The claim store, receipt log, checkpoint and security journal are the SDK's **test-only** reference stores, rebuilt for every run. They demonstrate the v2 decision path, including replay rejection and release, inside one run; they are not durable and this deployment is not a production-shaped v2 receiver. A production receiver supplies durable Part B stores and an independent checkpoint (SPEC-v2 §7).
+- Durable Objects provide durable challenge issuance records and counters, but this reference does not implement multi-region disaster recovery or audit export.
 - classifier.dev inputs leave the Ratify Worker. Review its privacy terms and minimize sensitive ticket content before using the pattern with real data.
 - The browser UI is an explanatory surface. Authorization remains entirely in the receiver.
 
